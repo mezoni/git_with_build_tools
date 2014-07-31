@@ -173,6 +173,8 @@ void writeChangelogMd() {
     for (var message in messages) {
       sb.writeln("- $message");
     }
+
+    sb.writeln("");
   }
 
   var md = new File(CHANGELOG_MD);
