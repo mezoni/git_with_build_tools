@@ -15,6 +15,10 @@ void main(List<String> args) {
   // Change directory to root
   FileUtils.chdir("..");
 
+  file(CHANGELOG_MD, [CHANGE_LOG], (Target t, Map args) {
+    writeChangelogMd();
+  });
+
   target("default", ["git:status"], null, description: "git status");
 
   target("git:status", [], (Target t, Map args) {
@@ -25,7 +29,7 @@ void main(List<String> args) {
     return exec("git", ["add", "--all"]);
   }, description: "git add --all");
 
-  target("git:commit", ["prj:changelog", "git:add"], (Target t, Map args) {
+  target("git:commit", [CHANGELOG_MD, "git:add"], (Target t, Map args) {
     var message = args["m"];
     if (message == null || message.isEmpty) {
       print("Please, specify the `commit` message with --m option");
@@ -43,6 +47,8 @@ void main(List<String> args) {
   }, description: "git commit, --m \"message\"");
 
   target("git:push", [], (Target t, Map args) {
+    // TODO: The `exec git push` does not show the prompt on Windows.
+    // But on Posix the `exec git push` works as expected.
     return exec("git", ["push", "origin", "master"]);
   }, description: "git push origin master");
 
@@ -53,12 +59,11 @@ void main(List<String> args) {
       return -1;
     }
 
-    logChanges(args["m"]);
+    logChanges(message);
   }, description: "log changes, --m message", reusable: true);
 
-  target("prj:changelog", [], (Target t, Map args) {
-    writeChangelogMd();
-  }, description: "generate '$CHANGELOG_MD'", reusable: true);
+  target("prj:changelog", [CHANGELOG_MD], null, description:
+      "generate '$CHANGELOG_MD'", reusable: true);
 
   target("prj:version", [], (Target t, Map args) {
     print("Version: ${getVersion()}");

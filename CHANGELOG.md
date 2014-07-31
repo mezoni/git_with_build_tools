@@ -1,3 +1,7 @@
+**0.0.6**
+
+- Modified `CHANGELOG.md` targets
+
 **0.0.5**
 
 - Fixed error in `logChanges`
