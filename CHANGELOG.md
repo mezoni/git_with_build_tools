@@ -1,3 +1,7 @@
+**0.0.7**
+
+- Added `README.md` file target
+
 **0.0.6**
 
 - Modified `CHANGELOG.md` targets

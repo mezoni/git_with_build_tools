@@ -1,0 +1,14 @@
+git_with_build_tools
+====================
+
+Example of the automation of the `git` tasks with `build_tools`.
+
+Version: {{VERSION}}
+
+You can download this project and play with it.
+
+The build script located at `tool/project.dart`.
+
+```dart
+{{EXAMPLE}}
+```

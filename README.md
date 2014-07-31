@@ -3,6 +3,8 @@ git_with_build_tools
 
 Example of the automation of the `git` tasks with `build_tools`.
 
+Version: 0.0.7
+
 You can download this project and play with it.
 
 The build script located at `tool/project.dart`.
@@ -16,6 +18,8 @@ import "package:file_utils/file_utils.dart";
 
 const String CHANGE_LOG = "change.log";
 const String CHANGELOG_MD = "CHANGELOG.md";
+const String README_MD = "README.md";
+const String README_MD_IN = "README.md.in";
 const String PUBSPEC_YAML = "pubspec.yaml";
 
 void main(List<String> args) {
@@ -24,6 +28,25 @@ void main(List<String> args) {
 
   // Change directory to root
   FileUtils.chdir("..");
+
+  // For use in `README.md`
+  var thisFile = script.toFilePath();
+
+  file(CHANGELOG_MD, [CHANGE_LOG], (Target t, Map args) {
+    writeChangelogMd();
+  });
+
+  file(README_MD_IN, [], (Target t, Map args) {
+    FileUtils.touch([t.name], create: true);
+  });
+
+  file(README_MD, [README_MD_IN, thisFile], (Target t, Map args) {
+    var template = new File(t.sources.first).readAsStringSync();
+    var example = new File(t.sources.last).readAsStringSync();
+    template = template.replaceFirst("{{EXAMPLE}}", example);
+    template = template.replaceFirst("{{VERSION}}", getVersion());
+    new File(t.name).writeAsStringSync(template);
+  });
 
   target("default", ["git:status"], null, description: "git status");
 
@@ -35,7 +58,8 @@ void main(List<String> args) {
     return exec("git", ["add", "--all"]);
   }, description: "git add --all");
 
-  target("git:commit", ["prj:changelog", "git:add"], (Target t, Map args) {
+  target("git:commit", [CHANGELOG_MD, README_MD, "git:add"], (Target t, Map
+      args) {
     var message = args["m"];
     if (message == null || message.isEmpty) {
       print("Please, specify the `commit` message with --m option");
@@ -53,6 +77,8 @@ void main(List<String> args) {
   }, description: "git commit, --m \"message\"");
 
   target("git:push", [], (Target t, Map args) {
+    // TODO: The `exec git push` does not show the prompt on Windows.
+    // But on Posix the `exec git push` works as expected.
     return exec("git", ["push", "origin", "master"]);
   }, description: "git push origin master");
 
@@ -63,12 +89,11 @@ void main(List<String> args) {
       return -1;
     }
 
-    logChanges(args["m"]);
+    logChanges(message);
   }, description: "log changes, --m message", reusable: true);
 
-  target("prj:changelog", [], (Target t, Map args) {
-    writeChangelogMd();
-  }, description: "generate '$CHANGELOG_MD'", reusable: true);
+  target("prj:changelog", [CHANGELOG_MD], null, description:
+      "generate '$CHANGELOG_MD'", reusable: true);
 
   target("prj:version", [], (Target t, Map args) {
     print("Version: ${getVersion()}");
@@ -115,9 +140,17 @@ void logChanges(String message) {
   }
 
   FileUtils.touch([CHANGE_LOG], create: true);
-  var file = new File(CHANGE_LOG).openSync(mode: FileMode.APPEND);
-  var string = "\n${getVersion()} $message";
-  file.writeStringSync(string);
+  var file = new File(CHANGE_LOG);
+  var length = file.lengthSync();
+  var fp = file.openSync(mode: FileMode.APPEND);
+  var sb = new StringBuffer();
+  if (length != 0) {
+    sb.writeln();
+  }
+
+  sb.write("${getVersion()} $message");
+  fp.writeStringSync(sb.toString());
+  fp.closeSync();
 }
 
 void updateVersion(String version) {
@@ -177,15 +210,18 @@ void writeChangelogMd() {
   var sb = new StringBuffer();
   for (var version in versions.keys) {
     sb.writeln("**${version}**");
-    sb.writeln("");
+    sb.writeln();
     var messages = versions[version];
     messages.sort((a, b) => a.compareTo(b));
     for (var message in messages) {
       sb.writeln("- $message");
     }
+
+    sb.writeln();
   }
 
   var md = new File(CHANGELOG_MD);
   md.writeAsStringSync(sb.toString());
 }
+
 ```

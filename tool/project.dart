@@ -6,6 +6,8 @@ import "package:file_utils/file_utils.dart";
 
 const String CHANGE_LOG = "change.log";
 const String CHANGELOG_MD = "CHANGELOG.md";
+const String README_MD = "README.md";
+const String README_MD_IN = "README.md.in";
 const String PUBSPEC_YAML = "pubspec.yaml";
 
 void main(List<String> args) {
@@ -15,8 +17,23 @@ void main(List<String> args) {
   // Change directory to root
   FileUtils.chdir("..");
 
+  // For use in `README.md`
+  var thisFile = script.toFilePath();
+
   file(CHANGELOG_MD, [CHANGE_LOG], (Target t, Map args) {
     writeChangelogMd();
+  });
+
+  file(README_MD_IN, [], (Target t, Map args) {
+    FileUtils.touch([t.name], create: true);
+  });
+
+  file(README_MD, [README_MD_IN, thisFile], (Target t, Map args) {
+    var template = new File(t.sources.first).readAsStringSync();
+    var example = new File(t.sources.last).readAsStringSync();
+    template = template.replaceFirst("{{EXAMPLE}}", example);
+    template = template.replaceFirst("{{VERSION}}", getVersion());
+    new File(t.name).writeAsStringSync(template);
   });
 
   target("default", ["git:status"], null, description: "git status");
@@ -29,7 +46,8 @@ void main(List<String> args) {
     return exec("git", ["add", "--all"]);
   }, description: "git add --all");
 
-  target("git:commit", [CHANGELOG_MD, "git:add"], (Target t, Map args) {
+  target("git:commit", [CHANGELOG_MD, README_MD, "git:add"], (Target t, Map
+      args) {
     var message = args["m"];
     if (message == null || message.isEmpty) {
       print("Please, specify the `commit` message with --m option");
