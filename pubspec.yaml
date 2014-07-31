@@ -1,0 +1,8 @@
+name: git_with_build_tools
+version: 0.0.2
+author: Andrew Mezoni <andrew.mezoni@gmail.com>
+description: Example of the automation of the `git` tasks with `build_tools`.
+homepage: https://github.com/mezoni/git_with_build_tools
+dependencies:
+  build_tools: any
+  file_utils: any

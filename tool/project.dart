@@ -1,13 +1,3 @@
-git_with_build_tools
-====================
-
-Example of the automation of the `git` tasks with `build_tools`.
-
-You can download this project and play with it.
-
-The build script located at `tool/project.dart`.
-
-```dart
 import "dart:io";
 import "package:build_tools/build_shell.dart";
 import "package:build_tools/build_tools.dart";
@@ -149,4 +139,3 @@ void updatetVersion(String version) {
   var string = sb.toString();
   file.writeAsStringSync(string);
 }
-```
