@@ -1,3 +1,7 @@
+**0.0.5**
+
+- Fixed error in `logChanges`
+
 **0.0.3**
 
 - Updated README.md

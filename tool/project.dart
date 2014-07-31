@@ -105,9 +105,17 @@ void logChanges(String message) {
   }
 
   FileUtils.touch([CHANGE_LOG], create: true);
-  var file = new File(CHANGE_LOG).openSync(mode: FileMode.APPEND);
-  var string = "\n${getVersion()} $message";
-  file.writeStringSync(string);
+  var file = new File(CHANGE_LOG);
+  var length = file.lengthSync();
+  var fp = file.openSync(mode: FileMode.APPEND);
+  var sb = new StringBuffer();
+  if (length != 0) {
+    sb.writeln();
+  }
+
+  sb.write("${getVersion()} $message");
+  fp.writeStringSync(sb.toString());
+  fp.closeSync();
 }
 
 void updateVersion(String version) {
@@ -167,14 +175,14 @@ void writeChangelogMd() {
   var sb = new StringBuffer();
   for (var version in versions.keys) {
     sb.writeln("**${version}**");
-    sb.writeln("");
+    sb.writeln();
     var messages = versions[version];
     messages.sort((a, b) => a.compareTo(b));
     for (var message in messages) {
       sb.writeln("- $message");
     }
 
-    sb.writeln("");
+    sb.writeln();
   }
 
   var md = new File(CHANGELOG_MD);

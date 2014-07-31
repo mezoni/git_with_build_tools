@@ -1,3 +1,4 @@
 0.0.2 Added target 'log:changes'
 0.0.2 Added target 'prj:changelog'
 0.0.3 Updated README.md
+0.0.5 Fixed error in `logChanges`
