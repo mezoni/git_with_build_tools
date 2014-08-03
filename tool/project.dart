@@ -206,7 +206,7 @@ void writeChangelogMd() {
 
   var sb = new StringBuffer();
   for (var version in versions.keys) {
-    sb.writeln("**${version}**");
+    sb.writeln("## ${version}");
     sb.writeln();
     var messages = versions[version];
     messages.sort((a, b) => a.compareTo(b));

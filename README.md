@@ -3,7 +3,7 @@ git_with_build_tools
 
 Example of the automation of the `git` tasks with `build_tools`.
 
-Version: 0.0.8
+Version: 0.0.9
 
 You can download this project and play with it.
 
@@ -218,7 +218,7 @@ void writeChangelogMd() {
 
   var sb = new StringBuffer();
   for (var version in versions.keys) {
-    sb.writeln("**${version}**");
+    sb.writeln("## ${version}");
     sb.writeln();
     var messages = versions[version];
     messages.sort((a, b) => a.compareTo(b));
