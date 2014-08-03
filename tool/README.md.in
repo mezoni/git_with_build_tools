@@ -10,5 +10,5 @@ You can download this project and play with it.
 The build script located at `tool/project.dart`.
 
 ```dart
-{{EXAMPLE}}
+{{tool/project.dart}}
 ```

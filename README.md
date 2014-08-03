@@ -3,7 +3,7 @@ git_with_build_tools
 
 Example of the automation of the `git` tasks with `build_tools`.
 
-Version: 0.0.7
+Version: 0.0.8
 
 You can download this project and play with it.
 
@@ -16,11 +16,12 @@ import "package:build_tools/build_tools.dart";
 import "package:build_tools/build_utils.dart";
 import "package:file_utils/file_utils.dart";
 
-const String CHANGE_LOG = "change.log";
+const String CHANGE_LOG = "tool/change.log";
 const String CHANGELOG_MD = "CHANGELOG.md";
-const String README_MD = "README.md";
-const String README_MD_IN = "README.md.in";
+const String PROJECT_DART = "tool/project.dart";
 const String PUBSPEC_YAML = "pubspec.yaml";
+const String README_MD = "README.md";
+const String README_MD_IN = "tool/README.md.in";
 
 void main(List<String> args) {
   // http://dartbug.com/20119 (before change directory)
@@ -40,10 +41,14 @@ void main(List<String> args) {
     FileUtils.touch([t.name], create: true);
   });
 
-  file(README_MD, [README_MD_IN, thisFile], (Target t, Map args) {
-    var template = new File(t.sources.first).readAsStringSync();
-    var example = new File(t.sources.last).readAsStringSync();
-    template = template.replaceFirst("{{EXAMPLE}}", example);
+  file(README_MD, [README_MD_IN, PROJECT_DART], (Target t, Map args) {
+    var sources = t.sources.toList();
+    var template = new File(sources.removeAt(0)).readAsStringSync();
+    for (var filename in sources) {
+      var text = new File(filename).readAsStringSync();
+      template = template.replaceFirst("{{$filename}}", text);
+    }
+
     template = template.replaceFirst("{{VERSION}}", getVersion());
     new File(t.name).writeAsStringSync(template);
   });
@@ -66,19 +71,23 @@ void main(List<String> args) {
       return -1;
     }
 
-    return exec("git", ["commit", "-m", message]).then((exitCode) {
-      if (exitCode == 0) {
-        updateVersion(incrementVersion(getVersion()));
-        print("Version switched to ${getVersion()}");
-      }
-
-      return exitCode;
-    });
+    return exec("git", ["commit", "-m", message]);
   }, description: "git commit, --m \"message\"");
+
+  // Update the project version after "git:commit"
+  after(["git:commit"], (Target t, Map args) {
+    var version = incrementVersion(getVersion());
+    print("Change the project version to '$version' (Y/N)?");
+    if (stdin.readLineSync().toLowerCase().startsWith("y")) {
+      updateVersion(version);
+      print("Version switched to $version");
+    }
+  });
 
   target("git:push", [], (Target t, Map args) {
     // TODO: The `exec git push` does not show the prompt on Windows.
-    // But on Posix the `exec git push` works as expected.
+    // But on Posix everything works as expected.
+    // Problem in the "git" or in the Dart VM "stdxxx" streams.
     return exec("git", ["push", "origin", "master"]);
   }, description: "git push origin master");
 
