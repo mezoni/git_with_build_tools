@@ -18,9 +18,6 @@ void main(List<String> args) {
   // Change directory to root
   FileUtils.chdir("..");
 
-  // For use in `README.md`
-  var thisFile = script.toFilePath();
-
   file(CHANGELOG_MD, [CHANGE_LOG], (Target t, Map args) {
     writeChangelogMd();
   });
@@ -62,7 +59,6 @@ void main(List<String> args) {
     return exec("git", ["commit", "-m", message]);
   }, description: "git commit, --m \"message\"");
 
-  // Update the project version after "git:commit"
   after(["git:commit"], (Target t, Map args) {
     var version = incrementVersion(getVersion());
     print("Change the project version to '$version' (Y/N)?");

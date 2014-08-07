@@ -1,3 +1,7 @@
+## 0.0.10
+
+- Removed unused code
+
 ## 0.0.9
 
 - Changed format of `CHANGELOG.md`
